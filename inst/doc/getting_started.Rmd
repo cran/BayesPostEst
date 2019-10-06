@@ -1,36 +1,62 @@
 ---
-title: "Getting Started with BayesPostEst"
-author: "Johannes Karreth"
+title: "Using the BayesPostEst package"
+author: 
+  - "Johannes Karreth"
+  - "Shana Scogin"
+  - "Rob Williams"
+  - "Andreas Beger"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 bibliography: "references.bib"
 vignette: >
   %\VignetteIndexEntry{getting_started}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-```
 
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  out.width = "90%", 
+  fig.align = "center", 
+  fig.width = 8, 
+  fig.height = 8,
+  comment = "#>"
+)
+```
 
 # Introduction
 
-BayesPostEst contains functions to generate postestimation quantities after estimating Bayesian regression models. The package combines functions written originally for [Johannes Karreth](http://www.jkarreth.net)'s workshop on Bayesian modeling at the [ICPSR Summer program](https://www.icpsr.umich.edu/icpsrweb/sumprog/). For now, the package focuses mostly on generalized linear regression models for binary outcomes (logistic and probit regression).
+BayesPostEst contains functions to generate postestimation quantities after estimating Bayesian regression models. The package was inspired by a set of functions written originally for [Johannes Karreth](http://www.jkarreth.net)'s workshop on Bayesian modeling at the [ICPSR Summer program](https://www.icpsr.umich.edu/icpsrweb/sumprog/). It has grown to include new functions (see `mcmcReg`) and will continue to grow to support Bayesian postestimation. For now, the package focuses mostly on generalized linear regression models for binary outcomes (logistic and probit regression). More details on the package philosophy, its functions, and related packages can be found in @ScoginEtal2019.
 
 # Installation
 
-The package can be installed from Github:
+To install the latest release on CRAN:
 
-```{r, eval = FALSE}
-devtools::install_github("ShanaScogin/BayesPostEst")
+```{r eval=FALSE}
+install.packages("BayesPostEst")
 ```
+
+The latest development version on GitHub can be installed with:
+
+```{r eval=FALSE}
+library("devtools")
+install_github("ShanaScogin/BayesPostEst")
+```
+
+Once you have installed the package, you can access it by calling:
 
 ```{r}
 library("BayesPostEst")
 ```
 
+After the package is loaded, check out the `?BayesPostEst` to see a help file.
 
 # General setup
 
@@ -38,7 +64,7 @@ Most functions in this package work with posterior distributions of parameters. 
 
 # Example data
 
-This vignette uses the `Cowles` dataset (@CowlesDavis1987) from the carData package (@carData2018). 
+This vignette uses the `Cowles` dataset [@CowlesDavis1987] from the carData package [@carData2018]. 
 
 ```{r}
 df <- carData::Cowles
@@ -49,9 +75,9 @@ This data frame contains information on 1421 individuals in the following variab
 - neuroticism: scale from Eysenck personality inventory.
 - extraversion: scale from Eysenck personality inventory.
 - sex: a factor with levels: female; male.
-- volunteer: volunteeing, a factor with levels: no; yes. This is the outcome variable for the running example in this vignette.
+- volunteer: volunteering, a factor with levels: no; yes. This is the outcome variable for the running example in this vignette.
 
-Before proceeding, we convert the two factor variables `sex` and `volunteer` into numeric variables. We also means-center and standardize the two continuous variables by dividing each by two standard deviations (@Gelman2007).
+Before proceeding, we convert the two factor variables `sex` and `volunteer` into numeric variables. We also means-center and standardize the two continuous variables by dividing each by two standard deviations [@Gelman2007].
 
 ```{r}
 df$female <- (as.numeric(df$sex) - 2) * (-1)
@@ -60,7 +86,7 @@ df$extraversion <- (df$extraversion - mean(df$extraversion)) / (2 * sd(df$extrav
 df$neuroticism <- (df$neuroticism - mean(df$neuroticism)) / (2 * sd(df$neuroticism))
 ```
 
-We estimate a Bayesian generalized linear model with the inverrse logit link function, where
+We estimate a Bayesian generalized linear model with the inverse logit link function, where
 
 $$
 Pr(\text{Volunteering}_i) = \text{logit}^{-1}(\beta_1 + \beta_2 \text{Female}_i +  \beta_3 \text{Neuroticism}_i + \beta_4 \text{Extraversion}_i)
@@ -70,11 +96,11 @@ $$
 
 # Model estimation
 
-To use `BayesPostEst`, we first estimate a Bayesian regression model. This vignette demonstrates four tools for doing so: JAGS (via the R2jags package), MCMCpack, and the two Stan interfaces rstan and rstanarm.
+To use `BayesPostEst`, we first estimate a Bayesian regression model. This vignette demonstrates five tools for doing so: JAGS (via the [R2jags](https://cran.r-project.org/package=R2jags) and [rjags](https://cran.r-project.org/package=rjags) packages), [MCMCpack](https://cran.r-project.org/package=MCMCpack), and the two Stan interfaces [rstan](https://cran.r-project.org/package=rstan) and [rstanarm](https://cran.r-project.org/package=rstanarm).
 
 ## JAGS
 
-First, we prepare the data for JAGS (@jags2017). Users need to combine all variables into a list and specify any other elements, like in this case N, the number of observations.
+First, we prepare the data for JAGS [@jags2017]. Users need to combine all variables into a list and specify any other elements, like in this case N, the number of observations.
 
 ```{r}
 dl <- as.list(df[, c("volunteer", "female", "neuroticism", "extraversion")])
@@ -91,17 +117,15 @@ for (i in 1:N){
   logit(p[i]) <- mu[i]   
   mu[i] <- b[1] + b[2] * female[i] + b[3] * neuroticism[i] + b[4] * extraversion[i]
   }
-
 for(j in 1:4){
   b[j] ~ dnorm(0, 0.1)
   }
-
 }
 ")
 writeLines(mod.jags, "mod.jags")	
 ```
 
-We then define the parameters for which we wish to retain posterior distributions and proivde starting values.
+We then define the parameters for which we wish to retain posterior distributions and provide starting values.
 
 ```{r}
 params.jags <- c("b")
@@ -109,20 +133,30 @@ inits1.jags <- list("b" = rep(0, 4))
 inits.jags <- list(inits1.jags, inits1.jags, inits1.jags, inits1.jags)
 ```
 
-Now, fit the model.
+Now, fit the model using the R2jags package. 
 
 ```{r}
 library("R2jags")
 set.seed(123)
-
 fit.jags <- jags(data = dl, inits = inits.jags, 
   parameters.to.save = params.jags, n.chains = 4, n.iter = 2000, 
   n.burnin = 1000, model.file = "mod.jags")
 ```
 
+The same data and model can be used to fit the model using the rjags package:
+
+```{r}
+library("rjags")
+mod.rjags <- jags.model(file = "mod.jags", data = dl, inits = inits.jags,
+                        n.chains = 4, n.adapt = 1000)
+fit.rjags <- coda.samples(model = mod.rjags,
+                          variable.names = params.jags,
+                          n.iter = 2000)
+```
+
 ## MCMCpack
 
-We estimate the same model using MCMCpack (@MCMCpack).
+We estimate the same model using MCMCpack [@MCMCpack].
 
 ```{r}
 library("MCMCpack")
@@ -153,7 +187,6 @@ model {
     b[i] ~ normal(0, 3); 
   }
 }
-
 ")
 writeLines(mod.stan, "mod.stan")	
 ```
@@ -174,12 +207,12 @@ fit.stan <- stan(file = "mod.stan",
            pars = c("b"),     
            chains = 4,        
            iter = 2000,       
-           seed = 123)        
+           seed = 123)    
 ```
 
 ## rstanarm
 
-Lastly, we use the rstanarm interface (@rstanarm2019) to estimate the same model again.
+Lastly, we use the rstanarm interface [@rstanarm2019] to estimate the same model again.
 
 ```{r}
 library("rstanarm")
@@ -195,11 +228,23 @@ fit.rstanarm <- stan_glm(volunteer ~ female + neuroticism + extraversion,
 
 # Tables of regression coefficients and other parameters
 
-`mcmcTab` generates a table summarizing the posterior distributions of all parameters contained in the model object. This table can then be used to summarize parameter quantities. The function can directly process objects created by the following packages: R2jags, runjags, rjags, R2WinBUGS, MCMCpack, rstan, rstanarm. This includes the following object classes: `jags`, `rjags`, `bugs`, `mcmc`, `mcmc.list`, `stanreg`, `stanfit`. By default, `mcmcTab` generates a dataframe with one row per parameter and columns containing the median, standard deviation, and 95% credible interval of each parameter's posterior distribution.
+BayesPostEst contains functions to generate regression tables from objects created by the following packages: R2jags, runjags, rjags, R2WinBUGS, MCMCpack, rstan, rstanarm, and brms. This includes the following object classes: `jags`, `rjags`, `bugs`, `mcmc`, `mcmc.list`, `stanreg`, `stanfit`, `brmsfit`. The package contains two different functions to produce regression tables:
 
+- `mcmcTab`
+- `mcmcReg`
+
+Each has its own advantages which we discuss in depth below.
+
+## Bayesian regression tables
+
+`mcmcTab` generates a table summarizing the posterior distributions of all parameters contained in the model object. This table can then be used to summarize parameter quantities.  By default, `mcmcTab` generates a dataframe with one row per parameter and columns containing the median, standard deviation, and 95% credible interval of each parameter's posterior distribution.
 
 ```{r}
 mcmcTab(fit.jags)
+```
+
+```{r}
+mcmcTab(fit.rjags)
 ```
 
 ```{r}
@@ -214,7 +259,7 @@ mcmcTab(fit.stan)
 mcmcTab(fit.rstanarm)
 ```
 
-## Proportion of positive/negative draws
+### Proportion of positive/negative draws
 
 Users can add a column to the table that calculates the percent of posterior draws that have the same sign as the median of the posterior distribution.
 
@@ -222,12 +267,106 @@ Users can add a column to the table that calculates the percent of posterior dra
 mcmcTab(fit.jags, Pr = TRUE)
 ```
 
-## ROPE
+### ROPE
 
-Users can also define a "region of practical equivalence" (ROPE; @Kruschke2013). This region is a band of values around 0 that are "practically equivalent" to 0 or no effect. For this to be useful, all parameters (e.g. regression coefficients) must be on the same scale because mcmcTab accepts only one definition of ROPE for all parameters. Users can standardize regression coefficients to achieve this. Because we standardized variables earlier, the coefficients (except the intercept) are on a similar scale and we define the ROPE to be between -0.1 and 0.1.
+Users can also define a "region of practical equivalence" (ROPE; @Kruschke2013; @Kruschke2018). This region is a band of values around 0 that are "practically equivalent" to 0 or no effect. For this to be useful, all parameters (e.g. regression coefficients) must be on the same scale because mcmcTab accepts only one definition of ROPE for all parameters. Users can standardize regression coefficients to achieve this. Because we standardized variables earlier, the coefficients (except the intercept) are on a similar scale and we define the ROPE to be between -0.1 and 0.1.
 
 ```{r}
 mcmcTab(fit.jags, pars = c("b[2]", "b[3]", "b[4]"), ROPE = c(-0.1, 0.1))
+```
+
+## Conventional regression tables
+
+The `mcmcReg` function serves as an interface to `texreg` and produces more polished and publication-ready tables than `mcmcTab`. `mcmcReg` writes tables in HTML or LaTeX format. `mcmcReg` can produce tables with multiple models with each model in a column and supports flexible renaming of parameters. However, these tables are more similar to standard frequentist regression tables, so they do not have a way to incorporate the percent of posterior draws that have the same sign as the median of the posterior distribution or a ROPE like `mcmcTab` is able to. Uncertainty intervals can be either standard credible intervals or highest posterior density intervals [@Kruschke2015] using the `hpdi` argument, and their level can be set with the `ci` argument (default 95%). Separately calculated goodness of fit statistics can be included with the `gof` argument.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags, format = 'html', doctype = F)
+```
+
+### Limiting output
+
+`mcmcReg` supports limiting the parameters included in the table via the `pars` argument. By default, all parameters saved in the model object will be included. In the case of `fit.jags`, this include the deviance estimate. If we wish to exclude it, we can specify `pars = 'b'` which will capture `b[1]`-`b[4]` using regular expression matching.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags, pars = 'b', format = 'html', doctype = F)
+```
+
+If we only wish to exclue the intercept, we can do this by explicitly specifying the parameters we wish to include as a vector. Note that in this example we have to escape the `[]`s in `pars` because they are a reserved character in regular expressions.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags, pars = c('b\\[1\\]', 'b\\[3\\]', 'b\\[4\\]'), 
+        format = 'html', doctype = F)
+```
+
+`mcmcReg` also supports partial regular expression matching of multiple parameter family names as demonstrated below.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags, pars = c('b', 'dev'), 
+        format = 'html', doctype = F)
+```
+
+### Custom coefficient names
+
+`mcmcReg` supports custom coefficient names to support publication-ready tables. The simplest option is via the `coefnames` argument. Note that the number of parameters and the number of custom coefficient names must match, so it is a good idea to use `pars` in tandem with `coefnames`.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags, pars = 'b',
+        coefnames = c('(Constant)', 'Female', 'Neuroticism', 'Extraversion'),
+        format = 'html', doctype = F)
+```
+
+A more flexible way to include custom coefficient names is via the `custom.coef.map` argument, which accepts a named list, with names as parameter names in the model and values as the custom coefficient names.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags, pars = 'b',
+        custom.coef.map = list('b[1]' = '(Constant)',
+                               'b[2]' = 'Female',
+                               'b[3]' = 'Nueroticism',
+                               'b[4]' = 'Extraversion'),
+        format = 'html', doctype = F)
+```
+
+The advantage of `custom.coef.map` is that it can flexibly reorder and omit coefficients from the table based on their positions within the list. Notice in the code below that deviance does not have to be included in `pars` because its absence from `custom.coef.map` omits it from the resulting table.
+
+```{r, results = 'asis'}
+mcmcReg(fit.jags,
+        custom.coef.map = list('b[2]' = 'Female',
+                               'b[4]' = 'Extraversion',
+                               'b[1]' = '(Constant)'),
+        format = 'html', doctype = F)
+```
+
+However, it is important to remember that `mcmcReg` will look for the parameter names in the model object, so be sure to inspect it for the correct parameter names. This is important because `stan_glm` will produce a model object with variable names instead of indexed parameter names.
+
+### Multiple models
+
+`mcmcReg` accepts multiple model objects and will produce a table with one model per column. To produce a table from multiple models, pass a list of models as the `mod` argument to `mcmcReg`.
+
+```{r, results = 'asis'}
+mcmcReg(list(fit.stan, fit.stan), format = 'html', doctype = F)
+```
+
+Note, however, that all model objects must be of the same class, so it is *not* possible to generate a table from a `jags` object and a `stanfit` object.
+
+```{r, error = T, results = 'asis'}
+mcmcReg(list(fit.jags, fit.stan), format = 'html', doctype = F)
+```
+
+When including multiple models, supplying scalars or vectors to arguments will result in them being applied to each model equally. Treating models differentially is possible by supplying a list of scalars or vectors instead.
+
+```{r, results = 'asis'}
+mcmcReg(list(fit.rstanarm, fit.rstanarm),
+        pars = list(c('female', 'extraversion'), 'neuroticism'),
+        format = 'html', doctype = F)
+```
+
+### `texreg` arguments
+
+Although `custom.coef.map` is not an argument to `mcmcReg`, it works because `mcmcReg` supports all standard `texreg` arguments (a few have been overridden, but they are explicit arguments to `mcmcReg`). This introduces a high level of control over the output of `mcmcReg`, as e.g. models can be renamed.
+
+```{r, results = 'asis'}
+mcmcReg(fit.rstanarm, custom.model.names = 'Binary Outcome', 
+        format = 'html', doctype = F)
 ```
 
 # Predicted probabilities
@@ -240,7 +379,6 @@ Before moving on, we show how create a matrix of posterior draws of coefficients
 
 ```{r}
 mcmcmat.jags <- as.matrix(coda::as.mcmc(fit.jags))
-
 mcmcmat.MCMCpack <- as.matrix(fit.MCMCpack)
   
 mcmcmat.stan <- as.matrix(fit.stan)
@@ -346,8 +484,7 @@ ggplot(data = obsprob.female.jags,
 
 ### Extraversion
 
-For this continuous predictor, we use `fullsims = FALSE.
-
+For this continuous predictor, we use `fullsims = FALSE`.
 ```{r}
 obsprob.extra.jags <- mcmcObsProb(modelmatrix = mm,
             mcmcout = mcmcmat.jags[, 1:ncol(mm)],
@@ -430,15 +567,15 @@ p + labs(title = "First differences") + ggridges::theme_ridges()
 
 One way to assess model fit is to calculate the area under the Receiver Operating Characteristic (ROC) and Precision-Recall curves. A short description of these curves and their utility for model assessment is provided in @Beger2016. The `mcmcRocPrc` function produces an object with four elements: the area under the ROC curve, the area under the PR curve, and two dataframes to plot each curve. When `fullsims` is set to `FALSE`, the elements represent the median of the posterior distribution of each quantity.
 
-Because each of these measures relies on comparing the observed $y$ to $Pr(y = 1)$, the function requires both the posterior distribution of all regression coefficients as well as a model frame. This model frame contains all variables used to estimate the model, with the outcome variable in the first column and all other variables following thereafter.
+`mcmcRocPrc` currently requires an "rjags" object (a model fitted in R2jags) as input. Future package versions will generalize this input to allow for model objects fit with any of the other packages used in BayesPostEst.
+
+<!-- Because each of these measures relies on comparing the observed $y$ to $Pr(y = 1)$, the function requires both the posterior distribution of all regression coefficients as well as a model frame. This model frame contains all variables used to estimate the model, with the outcome variable in the first column and all other variables following thereafter. -->
 
 ```{r}
-mf <- model.frame(volunteer ~ female + neuroticism + extraversion, data = df)
-fitstats <- mcmcRocPrc(modelmatrix = mm,
-                       modelframe = mf,
-                       mcmcout = mcmcmat.jags[, 1:ncol(mm)],
+fitstats <- mcmcRocPrc(object = fit.jags,
+                       yname  = "volunteer",
+                       xnames = c("female", "neuroticism", "extraversion"),
                        curves = TRUE,
-                       link = "logit",
                        fullsims = FALSE)
 ```
 
@@ -476,28 +613,31 @@ ggplot(data = fitstats$prc_dat, aes(x = x, y = y)) +
 To plot the posterior distribution of the area under the curves, users set the `fullsims` argument to `TRUE`. Unless a user wishes to plot credible intervals around the ROC and PR curves themselves, we recommend keeping `curves` at `FALSE` to avoid long computation time. 
 
 ```{r}
-fitstats.fullsims <- mcmcRocPrc(modelmatrix = mm,
-                                modelframe = mf,
-                                mcmcout = mcmcmat.jags[, 1:ncol(mm)],
-                                curves = FALSE,
-                                link = "logit",
-                                fullsims = TRUE)
+fitstats.fullsims <- mcmcRocPrc(object = fit.jags,
+                       yname  = "volunteer",
+                       xnames = c("female", "neuroticism", "extraversion"),
+                       curves = FALSE,
+                       fullsims = TRUE)
 ```
 
 We can then plot the posterior density of the area under each curve.
 
 ```{r}
-# ggplot(fitstats.fullsims, aes(x = area_under_roc)) + 
-#   geom_density() + 
-#   labs(title = "Area under the ROC curve")
+ggplot(fitstats.fullsims, aes(x = area_under_roc)) +
+  geom_density() +
+  labs(title = "Area under the ROC curve")
 ```
 
 ```{r}
-# ggplot(fitstats.fullsims, aes(x = area_under_prc)) + 
-#   geom_density() + 
-#   labs(title = "Area under the Precision-Recall curve")
+ggplot(fitstats.fullsims, aes(x = area_under_prc)) +
+  geom_density() +
+  labs(title = "Area under the Precision-Recall curve")
 ```
 
+```{r echo=FALSE, results='hide',message=FALSE}
+rm(mod.jags)
+rm(mod.stan)
+rm(mod.rds)
+```
 
 # References
-

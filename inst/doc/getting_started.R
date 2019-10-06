@@ -1,8 +1,22 @@
-## ----setup, include=FALSE------------------------------------------------
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+## ----setup, include = FALSE----------------------------------------------
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  out.width = "90%", 
+  fig.align = "center", 
+  fig.width = 8, 
+  fig.height = 8,
+  comment = "#>"
+)
 
-## ---- eval = FALSE-------------------------------------------------------
-#  devtools::install_github("ShanaScogin/BayesPostEst")
+## ----eval=FALSE----------------------------------------------------------
+#  install.packages("BayesPostEst")
+
+## ----eval=FALSE----------------------------------------------------------
+#  library("devtools")
+#  install_github("ShanaScogin/BayesPostEst")
 
 ## ------------------------------------------------------------------------
 library("BayesPostEst")
@@ -28,11 +42,9 @@ for (i in 1:N){
   logit(p[i]) <- mu[i]   
   mu[i] <- b[1] + b[2] * female[i] + b[3] * neuroticism[i] + b[4] * extraversion[i]
   }
-
 for(j in 1:4){
   b[j] ~ dnorm(0, 0.1)
   }
-
 }
 ")
 writeLines(mod.jags, "mod.jags")	
@@ -45,10 +57,17 @@ inits.jags <- list(inits1.jags, inits1.jags, inits1.jags, inits1.jags)
 ## ------------------------------------------------------------------------
 library("R2jags")
 set.seed(123)
-
 fit.jags <- jags(data = dl, inits = inits.jags, 
   parameters.to.save = params.jags, n.chains = 4, n.iter = 2000, 
   n.burnin = 1000, model.file = "mod.jags")
+
+## ------------------------------------------------------------------------
+library("rjags")
+mod.rjags <- jags.model(file = "mod.jags", data = dl, inits = inits.jags,
+                        n.chains = 4, n.adapt = 1000)
+fit.rjags <- coda.samples(model = mod.rjags,
+                          variable.names = params.jags,
+                          n.iter = 2000)
 
 ## ------------------------------------------------------------------------
 library("MCMCpack")
@@ -74,7 +93,6 @@ model {
     b[i] ~ normal(0, 3); 
   }
 }
-
 ")
 writeLines(mod.stan, "mod.stan")	
 
@@ -89,7 +107,7 @@ fit.stan <- stan(file = "mod.stan",
            pars = c("b"),     
            chains = 4,        
            iter = 2000,       
-           seed = 123)        
+           seed = 123)    
 
 ## ------------------------------------------------------------------------
 library("rstanarm")
@@ -103,6 +121,9 @@ fit.rstanarm <- stan_glm(volunteer ~ female + neuroticism + extraversion,
 
 ## ------------------------------------------------------------------------
 mcmcTab(fit.jags)
+
+## ------------------------------------------------------------------------
+mcmcTab(fit.rjags)
 
 ## ------------------------------------------------------------------------
 mcmcTab(fit.MCMCpack)
@@ -119,9 +140,57 @@ mcmcTab(fit.jags, Pr = TRUE)
 ## ------------------------------------------------------------------------
 mcmcTab(fit.jags, pars = c("b[2]", "b[3]", "b[4]"), ROPE = c(-0.1, 0.1))
 
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags, format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags, pars = 'b', format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags, pars = c('b\\[1\\]', 'b\\[3\\]', 'b\\[4\\]'), 
+        format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags, pars = c('b', 'dev'), 
+        format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags, pars = 'b',
+        coefnames = c('(Constant)', 'Female', 'Neuroticism', 'Extraversion'),
+        format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags, pars = 'b',
+        custom.coef.map = list('b[1]' = '(Constant)',
+                               'b[2]' = 'Female',
+                               'b[3]' = 'Nueroticism',
+                               'b[4]' = 'Extraversion'),
+        format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.jags,
+        custom.coef.map = list('b[2]' = 'Female',
+                               'b[4]' = 'Extraversion',
+                               'b[1]' = '(Constant)'),
+        format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(list(fit.stan, fit.stan), format = 'html', doctype = F)
+
+## ---- error = T, results = 'asis'----------------------------------------
+mcmcReg(list(fit.jags, fit.stan), format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(list(fit.rstanarm, fit.rstanarm),
+        pars = list(c('female', 'extraversion'), 'neuroticism'),
+        format = 'html', doctype = F)
+
+## ---- results = 'asis'---------------------------------------------------
+mcmcReg(fit.rstanarm, custom.model.names = 'Binary Outcome', 
+        format = 'html', doctype = F)
+
 ## ------------------------------------------------------------------------
 mcmcmat.jags <- as.matrix(coda::as.mcmc(fit.jags))
-
 mcmcmat.MCMCpack <- as.matrix(fit.MCMCpack)
   
 mcmcmat.stan <- as.matrix(fit.stan)
@@ -243,12 +312,10 @@ p <- mcmcFDplot(fdfull = fdfull.jags, ROPE = c(-0.01, 0.01))
 p + labs(title = "First differences") + ggridges::theme_ridges()
 
 ## ------------------------------------------------------------------------
-mf <- model.frame(volunteer ~ female + neuroticism + extraversion, data = df)
-fitstats <- mcmcRocPrc(modelmatrix = mm,
-                       modelframe = mf,
-                       mcmcout = mcmcmat.jags[, 1:ncol(mm)],
+fitstats <- mcmcRocPrc(object = fit.jags,
+                       yname  = "volunteer",
+                       xnames = c("female", "neuroticism", "extraversion"),
                        curves = TRUE,
-                       link = "logit",
                        fullsims = FALSE)
 
 ## ------------------------------------------------------------------------
@@ -273,20 +340,24 @@ ggplot(data = fitstats$prc_dat, aes(x = x, y = y)) +
   ylab("Precision")
 
 ## ------------------------------------------------------------------------
-fitstats.fullsims <- mcmcRocPrc(modelmatrix = mm,
-                                modelframe = mf,
-                                mcmcout = mcmcmat.jags[, 1:ncol(mm)],
-                                curves = FALSE,
-                                link = "logit",
-                                fullsims = TRUE)
+fitstats.fullsims <- mcmcRocPrc(object = fit.jags,
+                       yname  = "volunteer",
+                       xnames = c("female", "neuroticism", "extraversion"),
+                       curves = FALSE,
+                       fullsims = TRUE)
 
 ## ------------------------------------------------------------------------
-# ggplot(fitstats.fullsims, aes(x = area_under_roc)) + 
-#   geom_density() + 
-#   labs(title = "Area under the ROC curve")
+ggplot(fitstats.fullsims, aes(x = area_under_roc)) +
+  geom_density() +
+  labs(title = "Area under the ROC curve")
 
 ## ------------------------------------------------------------------------
-# ggplot(fitstats.fullsims, aes(x = area_under_prc)) + 
-#   geom_density() + 
-#   labs(title = "Area under the Precision-Recall curve")
+ggplot(fitstats.fullsims, aes(x = area_under_prc)) +
+  geom_density() +
+  labs(title = "Area under the Precision-Recall curve")
+
+## ----echo=FALSE, results='hide',message=FALSE----------------------------
+rm(mod.jags)
+rm(mod.stan)
+rm(mod.rds)
 

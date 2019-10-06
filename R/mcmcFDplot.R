@@ -18,7 +18,7 @@
 #'44 (2): 347–61. http://www.jstor.org/stable/2669316.
 #'\item Kruschke, John K. 2013. “Bayesian Estimation Supersedes the T-Test.” Journal of 
 #'Experimental Psychology: General 142 (2): 573–603. https://doi.org/10.1037/a0029146.
-#'\item Long, J. Scott. 1997. Regression Models for Categorial and Limited Dependent Variables. 
+#'\item Long, J. Scott. 1997. Regression Models for Categorical and Limited Dependent Variables. 
 #'Thousand Oaks: Sage Publications.
 #'}
 #'@return a density plot of the differences in probabilities. The plot is made with ggplot2 and can be
@@ -88,6 +88,8 @@
 #'
 mcmcFDplot <- function(fdfull, 
                        ROPE = NULL){
+  
+  ROPE <- check_ROPE_argument(ROPE)
   
   # convert fdfull to long data frame
   fd_dat <- tidyr::gather(as.data.frame(fdfull))
