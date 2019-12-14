@@ -1,3 +1,8 @@
+# BayesPostEst 0.2.0
+* Added functions `mcmcCoefPlot()` and `mcmcMargEff()`.
+* Added corresponding website and static docs using pkgdown.
+* Added function `mcmcRocPrcGen()`. This function takes generalized objects and has the same functionality as `mcmcRocPrc()`, which only works for jags objects currently. It should be noted that `mcmcRocPrcGen()` works much more slowly than `mcmcRocPrc()`. Future version aim to merge and improve upon these functions.
+
 # BayesPostEst 0.1.0
 
 * Added a `NEWS.md` file to track changes to the package.
