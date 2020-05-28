@@ -1,3 +1,6 @@
+# BayesPostEst 0.2.1
+* Added 'stringsAsFactors = TRUE' for new data.frame() default with R 4.0.0
+
 # BayesPostEst 0.2.0
 * Added functions `mcmcCoefPlot()` and `mcmcMargEff()`.
 * Added corresponding website and static docs using pkgdown.

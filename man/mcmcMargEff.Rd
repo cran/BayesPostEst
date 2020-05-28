@@ -48,6 +48,7 @@ a \code{ggplot} object or a tidy DataFrame.
 Marginal effects plots for MCMC output using \code{ggplot2}
 }
 \examples{
+\dontshow{.old_wd <- setwd(tempdir())}
 \donttest{
 ## simulating data
 set.seed(123456)
@@ -103,9 +104,10 @@ mcmcMargEff(mod = fit,
             main = 'b[2]',
             int = 'b[4]',
             moderator = sim_data_interactive$X2,
-            plot = T)
+            plot = TRUE)
 }
 
+\dontshow{setwd(.old_wd)}
 }
 \author{
 Rob Williams, \email{jayrobwilliams@gmail.com}

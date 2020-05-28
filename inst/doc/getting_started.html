@@ -15,7 +15,7 @@
 <meta name="author" content="Rob Williams" />
 <meta name="author" content="Andreas Beger" />
 
-<meta name="date" content="2019-12-14" />
+<meta name="date" content="2020-05-27" />
 
 <title>Using the BayesPostEst package</title>
 
@@ -101,7 +101,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h4 class="author">Shana Scogin</h4>
 <h4 class="author">Rob Williams</h4>
 <h4 class="author">Andreas Beger</h4>
-<h4 class="date">2019-12-14</h4>
+<h4 class="date">2020-05-27</h4>
 
 
 
@@ -234,7 +234,7 @@ fit.MCMCpack &lt;-<span class="st"> </span><span class="kw">MCMClogit</span>(vol
 <span class="st">}</span>
 <span class="st">&quot;</span>)
 <span class="kw">writeLines</span>(mod.stan, <span class="st">&quot;mod.stan&quot;</span>)    </code></pre></div>
-<p>We then load rstan (<span class="citation">Stan Development Team (2019)</span>)…</p>
+<p>We then load rstan <span class="citation">(Stan Development Team 2019)</span>…</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rstan&quot;</span>)
 <span class="kw">rstan_options</span>(<span class="dt">auto_write =</span> <span class="ot">TRUE</span>)
 <span class="kw">options</span>(<span class="dt">mc.cores =</span> <span class="dv">2</span>)</code></pre></div>
@@ -279,10 +279,10 @@ fit.rstanarm &lt;-<span class="st"> </span><span class="kw">stan_glm</span>(volu
 <span class="co">#&gt; 5 deviance 1909.455 2.875 1906.574 1917.541</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcTab</span>(fit.rjags)
 <span class="co">#&gt;   Variable Median    SD  Lower  Upper</span>
-<span class="co">#&gt; 1     b[1] -0.456 0.081 -0.616 -0.299</span>
-<span class="co">#&gt; 2     b[2]  0.233 0.110  0.020  0.447</span>
-<span class="co">#&gt; 3     b[3]  0.063 0.111 -0.151  0.282</span>
-<span class="co">#&gt; 4     b[4]  0.520 0.110  0.303  0.739</span></code></pre></div>
+<span class="co">#&gt; 1     b[1] -0.458 0.082 -0.621 -0.298</span>
+<span class="co">#&gt; 2     b[2]  0.236 0.112  0.020  0.457</span>
+<span class="co">#&gt; 3     b[3]  0.065 0.112 -0.152  0.283</span>
+<span class="co">#&gt; 4     b[4]  0.513 0.110  0.305  0.729</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcTab</span>(fit.MCMCpack)
 <span class="co">#&gt;       Variable Median    SD  Lower  Upper</span>
 <span class="co">#&gt; 1  (Intercept) -0.463 0.083 -0.612 -0.304</span>
@@ -423,7 +423,7 @@ deviance
 <div id="limiting-output" class="section level3">
 <h3>Limiting output</h3>
 <p><code>mcmcReg</code> supports limiting the parameters included in the table via the <code>pars</code> argument. By default, all parameters saved in the model object will be included. In the case of <code>fit.jags</code>, this include the deviance estimate. If we wish to exclude it, we can specify <code>pars = 'b'</code> which will capture <code>b[1]</code>-<code>b[4]</code> using regular expression matching.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcReg</span>(fit.jags, <span class="dt">pars =</span> <span class="st">'b'</span>, <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">doctype =</span> F)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcReg</span>(fit.jags, <span class="dt">pars =</span> <span class="st">'b'</span>, <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">regex =</span> T, <span class="dt">doctype =</span> F)</code></pre></div>
 <table cellspacing="0" align="center" style="border: none;">
 <caption align="bottom" style="margin-top:0.3em;">
 Statistical models
@@ -504,7 +504,7 @@ b[4]
 </table>
 <p>If we only wish to exclude the intercept, we can do this by explicitly specifying the parameters we wish to include as a vector. Note that in this example we have to escape the <code>[]</code>s in <code>pars</code> because they are a reserved character in regular expressions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcReg</span>(fit.jags, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">'b</span><span class="ch">\\</span><span class="st">[1</span><span class="ch">\\</span><span class="st">]'</span>, <span class="st">'b</span><span class="ch">\\</span><span class="st">[3</span><span class="ch">\\</span><span class="st">]'</span>, <span class="st">'b</span><span class="ch">\\</span><span class="st">[4</span><span class="ch">\\</span><span class="st">]'</span>), 
-        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">doctype =</span> F)</code></pre></div>
+        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">regex =</span> T, <span class="dt">doctype =</span> F)</code></pre></div>
 <table cellspacing="0" align="center" style="border: none;">
 <caption align="bottom" style="margin-top:0.3em;">
 Statistical models
@@ -570,7 +570,7 @@ b[4]
 </table>
 <p><code>mcmcReg</code> also supports partial regular expression matching of multiple parameter family names as demonstrated below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcReg</span>(fit.jags, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">'b'</span>, <span class="st">'dev'</span>), 
-        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">doctype =</span> F)</code></pre></div>
+        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">regex =</span> T, <span class="dt">doctype =</span> F)</code></pre></div>
 <table cellspacing="0" align="center" style="border: none;">
 <caption align="bottom" style="margin-top:0.3em;">
 Statistical models
@@ -670,7 +670,7 @@ deviance
 <p><code>mcmcReg</code> supports custom coefficient names to support publication-ready tables. The simplest option is via the <code>coefnames</code> argument. Note that the number of parameters and the number of custom coefficient names must match, so it is a good idea to use <code>pars</code> in tandem with <code>coefnames</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mcmcReg</span>(fit.jags, <span class="dt">pars =</span> <span class="st">'b'</span>,
         <span class="dt">coefnames =</span> <span class="kw">c</span>(<span class="st">'(Constant)'</span>, <span class="st">'Female'</span>, <span class="st">'Neuroticism'</span>, <span class="st">'Extraversion'</span>),
-        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">doctype =</span> F)</code></pre></div>
+        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">regex =</span> T, <span class="dt">doctype =</span> F)</code></pre></div>
 <table cellspacing="0" align="center" style="border: none;">
 <caption align="bottom" style="margin-top:0.3em;">
 Statistical models
@@ -755,7 +755,7 @@ Extraversion
                                <span class="st">'b[2]'</span> =<span class="st"> 'Female'</span>,
                                <span class="st">'b[3]'</span> =<span class="st"> 'Nueroticism'</span>,
                                <span class="st">'b[4]'</span> =<span class="st"> 'Extraversion'</span>),
-        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">doctype =</span> F)</code></pre></div>
+        <span class="dt">format =</span> <span class="st">'html'</span>, <span class="dt">regex =</span> T, <span class="dt">doctype =</span> F)</code></pre></div>
 <table cellspacing="0" align="center" style="border: none;">
 <caption align="bottom" style="margin-top:0.3em;">
 Statistical models

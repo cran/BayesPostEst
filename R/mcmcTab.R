@@ -15,6 +15,7 @@
 #'   to be meaningful, all parameters must be on the same scale (e.g. standardized coefficients 
 #'   or first differences). See Kruschke (2013, Journal of Experimental 
 #'   Psychology 143(2): 573-603) for more on the ROPE.
+#' @param regex use regular expression matching with \code{pars}?
 #'
 #' @references Kruschke, John K. 2013. “Bayesian Estimation Supersedes the T-Test.” Journal of 
 #'   Experimental Psychology: General 142 (2): 573–603. https://doi.org/10.1037/a0029146.
@@ -22,6 +23,8 @@
 #' @return a data frame containing MCMC summary statistics.
 #'
 #' @examples
+#' \dontshow{.old_wd <- setwd(tempdir())}
+#' \donttest{
 #' data("jags_logit")
 #' 
 #' ## printing out table
@@ -31,13 +34,17 @@
 #'           Pr = FALSE,
 #'           ROPE = NULL)
 #' object
+#' }
 #' 
+#' \dontshow{setwd(.old_wd)}
 #' @export
+
 mcmcTab <- function(sims, 
                     ci = c(0.025, 0.975), 
                     pars = NULL, 
                     Pr = FALSE,
-                    ROPE = NULL) {
+                    ROPE = NULL,
+                    regex = FALSE) {
   
   if (inherits(sims, what = c("jags", "rjags"))) {
     sims <- as.matrix(coda::as.mcmc(sims))
@@ -52,16 +59,13 @@ mcmcTab <- function(sims,
   
   ROPE <- check_ROPE_argument(ROPE)
   
-  if(is.null(pars) == TRUE){
+  if (is.null(pars)) {
     dat <- sims
-  }
-  
-  if(is.null(pars) == FALSE & length(pars) == 1){
-    dat <- sims[, grepl(x = colnames(sims), pattern = pars)]
-  }
-  
-  if(is.null(pars) == FALSE & length(pars) > 1){
-    dat <- sims[, pars]
+  } else if (regex) {
+    dat <- sims[, grepl(x = colnames(sims), pattern = paste(pars, collapse = "|"))]
+  } else {
+    dat <- matrix(sims[, pars], nrow = nrow(sims), byrow = FALSE,
+                  dimnames = list(NULL, pars))
   }
   
   dat_wide <- t(dat)
@@ -98,7 +102,11 @@ mcmcTab <- function(sims,
   # return(t(mcmctab))
   out_dat <- data.frame("Variable" = colnames(mcmctab), 
                         t(mcmctab),
-                        row.names = NULL)
+                        row.names = NULL,
+                        stringsAsFactors = TRUE) # check this, new with R 4.0.0
+                                                 # recommended if sort order used 
+                                                 # in the string to factor conversion
+                                                 # does not matter
   
   return(out_dat)
   

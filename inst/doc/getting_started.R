@@ -144,20 +144,20 @@ mcmcTab(fit.jags, pars = c("b[2]", "b[3]", "b[4]"), ROPE = c(-0.1, 0.1))
 mcmcReg(fit.jags, format = 'html', doctype = F)
 
 ## ---- results = 'asis'---------------------------------------------------
-mcmcReg(fit.jags, pars = 'b', format = 'html', doctype = F)
+mcmcReg(fit.jags, pars = 'b', format = 'html', regex = T, doctype = F)
 
 ## ---- results = 'asis'---------------------------------------------------
 mcmcReg(fit.jags, pars = c('b\\[1\\]', 'b\\[3\\]', 'b\\[4\\]'), 
-        format = 'html', doctype = F)
+        format = 'html', regex = T, doctype = F)
 
 ## ---- results = 'asis'---------------------------------------------------
 mcmcReg(fit.jags, pars = c('b', 'dev'), 
-        format = 'html', doctype = F)
+        format = 'html', regex = T, doctype = F)
 
 ## ---- results = 'asis'---------------------------------------------------
 mcmcReg(fit.jags, pars = 'b',
         coefnames = c('(Constant)', 'Female', 'Neuroticism', 'Extraversion'),
-        format = 'html', doctype = F)
+        format = 'html', regex = T, doctype = F)
 
 ## ---- results = 'asis'---------------------------------------------------
 mcmcReg(fit.jags, pars = 'b',
@@ -165,7 +165,7 @@ mcmcReg(fit.jags, pars = 'b',
                                'b[2]' = 'Female',
                                'b[3]' = 'Nueroticism',
                                'b[4]' = 'Extraversion'),
-        format = 'html', doctype = F)
+        format = 'html', regex = T, doctype = F)
 
 ## ---- results = 'asis'---------------------------------------------------
 mcmcReg(fit.jags,
@@ -356,7 +356,7 @@ ggplot(fitstats.fullsims, aes(x = area_under_prc)) +
   geom_density() +
   labs(title = "Area under the Precision-Recall curve")
 
-## ----echo=FALSE, results='hide',message=FALSE----------------------------
+## ----echo=FALSE, results='hide', message=FALSE---------------------------
 rm(mod.jags)
 rm(mod.stan)
 rm(mod.rds)
