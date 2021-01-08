@@ -4,8 +4,16 @@
 \alias{mcmcAveProb}
 \title{Predicted Probabilities using Bayesian MCMC estimates for the "Average" Case}
 \usage{
-mcmcAveProb(modelmatrix, mcmcout, xcol, xrange, xinterest,
-  link = "logit", ci = c(0.025, 0.975), fullsims = FALSE)
+mcmcAveProb(
+  modelmatrix,
+  mcmcout,
+  xcol,
+  xrange,
+  xinterest,
+  link = "logit",
+  ci = c(0.025, 0.975),
+  fullsims = FALSE
+)
 }
 \arguments{
 \item{modelmatrix}{model matrix, including intercept (if the intercept is among the
@@ -88,10 +96,10 @@ see e.g. King, Tomz & Wittenberg (2000, American Journal of Political Science 44
   Z <- b0 + b1 * X1 + b2 * X2
   pr <- 1 / (1 + exp(-Z)) # inv logit function
   Y <- rbinom(n, 1, pr) 
-  data <- data.frame(cbind(X1, X2, Y))
+  df <- data.frame(cbind(X1, X2, Y))
   
   ## formatting the data for jags
-  datjags <- as.list(data)
+  datjags <- as.list(df)
   datjags$N <- length(datjags$Y)
   
   ## creating jags model
@@ -125,7 +133,7 @@ fit <- jags(data = datjags, inits = inits,
 
 ### average value approach
 library(coda)
-xmat <- model.matrix(Y ~ X1 + X2, data = data)
+xmat <- model.matrix(Y ~ X1 + X2, data = df)
 mcmc <- as.mcmc(fit)
 mcmc_mat <- as.matrix(mcmc)[, 1:ncol(xmat)]
 X1_sim <- seq(from = min(datjags$X1),

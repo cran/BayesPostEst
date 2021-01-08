@@ -4,7 +4,9 @@
 \name{jags_logit}
 \alias{jags_logit}
 \title{Fitted JAGS logit model}
-\format{A class "rjags" object created by [R2jags::jags()]}
+\format{
+A class "rjags" object created by [R2jags::jags()]
+}
 \usage{
 jags_logit
 }
@@ -17,7 +19,7 @@ code below for how it was created. Used in examples and for testing.
 data("sim_data")
   
 ## formatting the data for jags
-datjags <- as.list(data)
+datjags <- as.list(sim_data)
 datjags$N <- length(datjags$Y)
 
 ## creating jags model

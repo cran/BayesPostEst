@@ -10,7 +10,7 @@
 #' data("sim_data")
 #'   
 #' ## formatting the data for jags
-#' datjags <- as.list(data)
+#' datjags <- as.list(sim_data)
 #' datjags$N <- length(datjags$Y)
 #' 
 #' ## creating jags model
@@ -58,7 +58,7 @@
 #' data("sim_data")
 #'   
 #' ## formatting the data for jags
-#' datjags <- as.list(data)
+#' datjags <- as.list(sim_data)
 #' datjags$N <- length(datjags$Y)
 #' 
 #' ## creating jags model
@@ -107,7 +107,7 @@
 #' data("sim_data_interactive")
 #' 
 #' ## formatting the data for jags
-#' datjags <- as.list(data)
+#' datjags <- as.list(sim_data_interactive)
 #' datjags$N <- length(datjags$Y)
 #' 
 #' ## creating jags model
@@ -147,6 +147,8 @@
 #' @docType data
 "jags_interactive"
 
+# jags_interactive_cat ----------------------------------------------------
+
 #' Fitted JAGS interactive linear model with categorical moderator
 #' 
 #' A fitted JAGS linear model with interaction term generated with
@@ -160,7 +162,7 @@
 #' data("sim_data_interactive_cat")
 #' 
 #' ## formatting the data for jags
-#' datjags <- as.list(data)
+#' datjags <- as.list(sim_data_interactive_cat)
 #' datjags$N <- length(datjags$Y)
 #' 
 #' ## creating jags model
@@ -199,7 +201,6 @@
 #' }
 #' @docType data
 "jags_interactive_cat"
-
 
 #' Simulated data for examples
 #' 
