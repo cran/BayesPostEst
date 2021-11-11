@@ -120,7 +120,7 @@ fit.MCMCpack <- MCMClogit(volunteer ~ female + neuroticism + extraversion,
 #             iter = 2000,
 #             seed = 123)
 
-## -----------------------------------------------------------------------------
+## ---- results = 'hide'--------------------------------------------------------
 library("rstanarm")
 fit.rstanarm <- stan_glm(volunteer ~ female + neuroticism + extraversion, 
                           data = df, family = binomial(link = "logit"),
