@@ -1,10 +1,21 @@
+## packages used:
+## jrags
+
+## data files used:
+## jags_logit.rds
+## jags_probit.rds
+## sim_data.rds
 
 test_that("Simple model runs with mcmcAveProb", {
   
-  data("jags_logit")
+  testthat::skip_if_not_installed("rjags")
+  
+  #jags_logit <- readRDS("../testdata/jags_logit.rds")
+  jags_logit <- readRDS(file.path(TESTDATA_DIR, "jags_logit.rds"))
   fit <- jags_logit
   
-  data("sim_data")
+  #sim_data <- readRDS("../testdata/sim_data.rds")
+  sim_data <- readRDS(file.path(TESTDATA_DIR, "sim_data.rds"))
   datjags <- as.list(sim_data)
   
   ### average value approach
@@ -43,11 +54,16 @@ test_that("Simple model runs with mcmcAveProb", {
 
 test_that("Simple model runs with mcmcAveProb probit", {
   
-  data("jags_probit")
+  testthat::skip_if_not_installed("rjags")
+  
+  #jags_probit <- readRDS("../testdata/jags_probit.rds")
+  jags_probit <- readRDS(file.path(TESTDATA_DIR, "jags_probit.rds"))
   fit <- jags_probit
   
-  data("sim_data")
+  #sim_data <- readRDS("../testdata/sim_data.rds")
+  sim_data <- readRDS(file.path(TESTDATA_DIR, "sim_data.rds"))
   datjags <- as.list(sim_data)
+
   
   ### average value approach
   xmat <- model.matrix(Y ~ X1 + X2, data = sim_data)
