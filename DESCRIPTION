@@ -1,8 +1,8 @@
 Package: BayesPostEst
 Type: Package
 Title: Generate Postestimation Quantities for Bayesian MCMC Estimation
-Version: 0.4.0
-Date: 2025-08-13
+Version: 0.4.1
+Date: 2026-09-26
 Authors@R: 
     c(person("Johannes", 
              "Karreth", 
@@ -34,19 +34,20 @@ Description: An implementation of functions to generate and plot postestimation 
 URL: https://github.com/ShanaScogin/BayesPostEst
 BugReports: https://github.com/ShanaScogin/BayesPostEst/issues
 License: GPL-3
-Imports: carData, caTools, coda (>= 0.13), dplyr (>= 0.5.0), ggplot2,
-        ggridges, reshape2, rlang, stats, texreg, tidyr (>= 0.5.1),
-        HDInterval, ROCR, graphics, grDevices, R2jags, rjags
+Imports: caTools, coda (>= 0.13), dplyr (>= 0.5.0), ggplot2, ggridges,
+        reshape2, rlang, stats, texreg, tidyr (>= 0.5.1), ROCR,
+        graphics, grDevices, R2jags
 Depends: R (>= 3.5.0)
 Encoding: UTF-8
 LazyLoad: TRUE
 Suggests: datasets, knitr, rmarkdown, rstan (>= 2.10.1), testthat,
-        covr, runjags, rstanarm, MCMCpack, R2WinBUGS, brms
+        covr, runjags, rstanarm, MCMCpack, R2WinBUGS, brms, carData,
+        HDInterval, rjags
 VignetteBuilder: knitr
 RoxygenNote: 7.1.2
 SystemRequirements: JAGS (http://mcmc-jags.sourceforge.io)
 NeedsCompilation: no
-Packaged: 2025-08-18 19:57:27 UTC; shanascogin
+Packaged: 2026-09-27 01:46:57 UTC; shanascogin
 Author: Johannes Karreth [aut] (ORCID: <https://orcid.org/0000-0003-4586-7153>),
   Shana Scogin [aut, cre] (ORCID:
     <https://orcid.org/0000-0002-7801-853X>),
@@ -56,4 +57,4 @@ Author: Johannes Karreth [aut] (ORCID: <https://orcid.org/0000-0003-4586-7153>),
   Neil Williams [ctb]
 Maintainer: Shana Scogin <shanarscogin@gmail.com>
 Repository: CRAN
-Date/Publication: 2025-08-18 20:20:02 UTC
+Date/Publication: 2026-09-27 02:40:02 UTC
